@@ -5,10 +5,14 @@ import models
 import schemas
 import crud
 from database import engine, SessionLocal
+from security import create_access_token, verify_token
+from app.routers import students
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+
+app.include_router(students.router)
 
 def get_db():
     db = SessionLocal()
@@ -25,8 +29,6 @@ def home():
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return crud.create_user(db, user)
 
-from security import create_access_token, verify_token
-
 @app.post("/login")
 def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     db_user = crud.login_user(db, user)
@@ -37,9 +39,7 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
             detail="Invalid email or password"
         )
 
-    token = create_access_token(
-        {"sub": db_user.email}
-    )
+    token = create_access_token({"sub": db_user.email})
 
     return {
         "access_token": token,
@@ -64,39 +64,3 @@ def get_current_user(
         raise HTTPException(status_code=404, detail="User not found")
 
     return user
-
-@app.post("/students", response_model=schemas.StudentResponse)
-def add_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
-    return crud.create_student(db, student)
-
-@app.get("/students", response_model=list[schemas.StudentResponse])
-def view_students(db: Session = Depends(get_db)):
-    return crud.get_students(db)
-
-@app.get("/students/{student_id}", response_model=schemas.StudentResponse)
-def view_student(student_id: int, db: Session = Depends(get_db)):
-    student = crud.get_student(db, student_id)
-
-    if student is None:
-        raise HTTPException(status_code=404, detail="Student not found")
-
-    return student
-
-@app.put("/students/{student_id}", response_model=schemas.StudentResponse)
-def edit_student(student_id: int, updated_student: schemas.StudentCreate, db: Session = Depends(get_db)):
-    student = crud.update_student(db, student_id, updated_student)
-
-    if student is None:
-        raise HTTPException(status_code=404, detail="Student not found")
-
-    return student
-
-@app.delete("/students/{student_id}")
-def remove_student(student_id: int, db: Session = Depends(get_db)):
-    student = crud.delete_student(db, student_id)
-
-    if student is None:
-        raise HTTPException(status_code=404, detail="Student not found")
-
-    return {"message": "Student deleted successfully"}
-
