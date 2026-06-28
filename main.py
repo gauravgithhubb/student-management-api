@@ -1,52 +1,48 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+import models
+import schemas
+import crud
+from database import engine, SessionLocal
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-students = []
-
-class Student(BaseModel):
-    id: int
-    name: str
-    branch: str
-    year: int
-    email: str
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/")
 def home():
-    return {"message": "Student Management API is running"}
+    return {"message": "Student Management API with Database is running"}
 
-@app.post("/students")
-def add_student(student: Student):
-    for s in students:
-        if s["id"] == student.id:
-            raise HTTPException(status_code=400, detail="Student ID already exists")
-    students.append(student.dict())
-    return {"message": "Student added successfully", "student": student}
+@app.post("/students", response_model=schemas.StudentResponse)
+def add_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
+    return crud.create_student(db, student)
 
-@app.get("/students")
-def get_students():
-    return students
+@app.get("/students", response_model=list[schemas.StudentResponse])
+def view_students(db: Session = Depends(get_db)):
+    return crud.get_students(db)
 
-@app.get("/students/{student_id}")
-def get_student(student_id: int):
-    for student in students:
-        if student["id"] == student_id:
-            return student
-    raise HTTPException(status_code=404, detail="Student not found")
+@app.get("/students/{student_id}", response_model=schemas.StudentResponse)
+def view_student(student_id: int, db: Session = Depends(get_db)):
+    student = crud.get_student(db, student_id)
 
-@app.put("/students/{student_id}")
-def update_student(student_id: int, updated_student: Student):
-    for index, student in enumerate(students):
-        if student["id"] == student_id:
-            students[index] = updated_student.dict()
-            return {"message": "Student updated successfully", "student": updated_student}
-    raise HTTPException(status_code=404, detail="Student not found")
+    if student is None:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    return student
 
 @app.delete("/students/{student_id}")
-def delete_student(student_id: int):
-    for student in students:
-        if student["id"] == student_id:
-            students.remove(student)
-            return {"message": "Student deleted successfully"}
-    raise HTTPException(status_code=404, detail="Student not found")
+def remove_student(student_id: int, db: Session = Depends(get_db)):
+    student = crud.delete_student(db, student_id)
+
+    if student is None:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    return {"message": "Student deleted successfully"}
