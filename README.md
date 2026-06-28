@@ -88,6 +88,31 @@ student-management-api
 
 ---
 
+# 📡 API Endpoints
+
+## Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | /register | Register a new user |
+| POST | /login | Login and receive JWT token |
+| GET | /profile | Protected profile endpoint |
+| GET | /me | Get current logged-in user |
+
+---
+
+## Student Management
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | /students | Get all students |
+| GET | /students/{id} | Get student by ID |
+| POST | /students | Add a new student |
+| PUT | /students/{id} | Update student |
+| DELETE | /students/{id} | Delete student |
+
+---
+
 # 👨‍💻 Author
 
 **Gaurav Pathuri**
