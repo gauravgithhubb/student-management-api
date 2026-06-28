@@ -113,6 +113,32 @@ student-management-api
 
 ---
 
+---
+
+# 📸 Screenshots
+
+## Swagger UI
+
+![Swagger](screenshots/swagger-home.png)
+
+---
+
+## Login API
+
+![Login](screenshots/login-success.png)
+
+---
+
+## Current User API
+
+![Current User](screenshots/current-user.png)
+
+---
+
+## Student APIs
+
+![Students](screenshots/students-api.png)
+
 # 👨‍💻 Author
 
 **Gaurav Pathuri**
