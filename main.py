@@ -21,6 +21,10 @@ def get_db():
 def home():
     return {"message": "Student Management API with Database is running"}
 
+@app.post("/register", response_model=schemas.UserResponse)
+def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    return crud.create_user(db, user)
+
 @app.post("/students", response_model=schemas.StudentResponse)
 def add_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
     return crud.create_student(db, student)

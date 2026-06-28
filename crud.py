@@ -1,3 +1,5 @@
+import auth
+
 from sqlalchemy.orm import Session
 import models
 import schemas
@@ -44,3 +46,18 @@ def update_student(db: Session, student_id: int, updated_student: schemas.Studen
     db.refresh(student)
 
     return student
+
+def create_user(db: Session, user: schemas.UserCreate):
+    hashed_password = auth.hash_password(user.password)
+
+    new_user = models.User(
+        name=user.name,
+        email=user.email,
+        password=hashed_password
+    )
+
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
