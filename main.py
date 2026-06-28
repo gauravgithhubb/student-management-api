@@ -53,6 +53,18 @@ def get_profile(current_user_email: str = Depends(verify_token)):
         "user_email": current_user_email
     }
 
+@app.get("/me", response_model=schemas.UserResponse)
+def get_current_user(
+    current_user_email: str = Depends(verify_token),
+    db: Session = Depends(get_db)
+):
+    user = crud.get_user_by_email(db, current_user_email)
+
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return user
+
 @app.post("/students", response_model=schemas.StudentResponse)
 def add_student(student: schemas.StudentCreate, db: Session = Depends(get_db)):
     return crud.create_student(db, student)
@@ -87,3 +99,4 @@ def remove_student(student_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Student not found")
 
     return {"message": "Student deleted successfully"}
+
