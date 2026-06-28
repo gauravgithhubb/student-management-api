@@ -38,6 +38,15 @@ def view_student(student_id: int, db: Session = Depends(get_db)):
 
     return student
 
+@app.put("/students/{student_id}", response_model=schemas.StudentResponse)
+def edit_student(student_id: int, updated_student: schemas.StudentCreate, db: Session = Depends(get_db)):
+    student = crud.update_student(db, student_id, updated_student)
+
+    if student is None:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    return student
+
 @app.delete("/students/{student_id}")
 def remove_student(student_id: int, db: Session = Depends(get_db)):
     student = crud.delete_student(db, student_id)

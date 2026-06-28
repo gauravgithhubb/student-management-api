@@ -28,3 +28,19 @@ def delete_student(db: Session, student_id: int):
         db.commit()
 
     return student
+
+def update_student(db: Session, student_id: int, updated_student: schemas.StudentCreate):
+    student = db.query(models.Student).filter(models.Student.id == student_id).first()
+
+    if student is None:
+        return None
+
+    student.name = updated_student.name
+    student.branch = updated_student.branch
+    student.year = updated_student.year
+    student.email = updated_student.email
+
+    db.commit()
+    db.refresh(student)
+
+    return student
