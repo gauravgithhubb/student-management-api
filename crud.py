@@ -61,3 +61,14 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(new_user)
 
     return new_user
+
+def login_user(db: Session, user: schemas.UserLogin):
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+
+    if db_user is None:
+        return None
+
+    if not auth.verify_password(user.password, db_user.password):
+        return None
+
+    return db_user
